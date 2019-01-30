@@ -1,0 +1,185 @@
+---
+title: "us_tuition_costs"
+author: "Zach"
+date: "1/29/2019"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+## 2018 Week 1 (2018-04-02) US Tuition Costs
+
+*tidytuesday*
+
+```{r}
+library(tidyverse)
+library(readxl)
+library(scales)
+```
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+theme_set(theme_light())
+```
+
+```{r}
+file_path = "../tidytuesday/data/2018/2018-04-02/us_avg_tuition.xlsx"
+
+tuition_costs <- read_excel(file_path)
+```
+
+### Look at average tuition rates across states
+
+```{r}
+tuition_costs %>% 
+  gather(year_range, tuition, -State) %>%
+  group_by(State) %>%
+  summarise(avg_tuition = mean(tuition)) %>%
+  arrange(desc(avg_tuition))
+```
+
+Found Vermont has the largest average tuition rate.
+
+### How Does Tuition Change in Vermont?
+
+```{r}
+tuition_costs %>%
+  filter(State == "Vermont") %>%
+  gather(year_range, tuition, -State) %>%
+  arrange(State) %>% 
+  ggplot(aes(year_range, tuition)) +
+  scale_y_continuous(labels = dollar_format()) +
+  labs(x = "Year Range", y = "Tuition",
+       title = "Tuition Rates Over Time for California",
+       subtitle = "via onlinembapage.com") +
+  coord_flip() +
+  geom_point() 
+```
+
+### Throw Everything on one graph!
+
+```{r}
+tuition_costs %>%
+  gather(year_range, tuition, -State) %>%
+  arrange(State) %>% 
+  ggplot(aes(year_range, tuition)) +
+  scale_y_continuous(labels = dollar_format()) +
+  labs(x = "Year Range", y = "Tuition",
+       title = "Tuition Rates Over All States",
+       subtitle = "via onlinembapage.com") +
+  coord_flip() +
+  geom_point()
+```
+
+### Let's make some regions
+
+Regions from https://en.wikipedia.org/wiki/List_of_regions_of_the_United_States. I feel like these regions could be hot-button subjects...
+
+```{r}
+# Northeast
+northeast <- c("Connecticut", "Maine", "Massachusetts", "New Hampshire", "Rhode Island", "Vermont", "New Jersey", "New York", "Pennsylvania")
+# Midwest
+midwest <- c("Illinois", "Indiana", "Michigan", "Ohio", "Wisconsin", "Iowa", "Kansas", "Minnesota", "Missouri", "Nebraska", "North Dakota", "South Dakota")
+# South
+south <- c("Delaware", "Florida", "Georgia", "Maryland", "North Carolina", "South Carolina", "Virginia", "West Virginia", "Alabama", "Kentucky", "Mississippi",  "Tennessee", "Arkansas", "Louisiana", "Oklahoma", "Texas")
+# West
+west <- c("Arizona", "Colorado", "Idaho", "Montana", "Nevada", "New Mexico", "Utah", "Wyoming", "Alaska", "California", "Hawaii", "Oregon", "Washington")
+
+```
+
+Make a version of the dataframe that has regions included.
+
+```{r}
+tuition_regions = tuition_costs %>%
+  mutate(region = if_else(State %in% northeast, "northeast", 
+                 if_else(State %in% midwest, "midwest",
+                 if_else(State %in% south, "south", "west"))))
+```
+
+### Overlap Regions
+
+Watch the gather when copying code over (can't forget to exclude the new region column or we run into trouble).
+
+```{r}
+tuition_regions %>%
+  gather(year_range, tuition, -State, -region) %>% 
+  ggplot(aes(year_range, tuition, color = region)) +
+  scale_y_continuous(labels = dollar_format()) +
+  geom_point(size = 4, alpha = 0.7) +
+  labs(x = "Year Range", y = "Tuition",
+       title = "Tuition Rates by Region",
+       subtitle = "via onlinembapage.com") +
+  coord_flip()
+```
+
+## Appendix
+
+### Northeast
+
+```{r}
+tuition_costs %>%
+  filter(State %in% northeast) %>%
+  gather(year_range, tuition, -State) %>%
+  arrange(State) %>% 
+  ggplot(aes(year_range, tuition)) +
+  scale_y_continuous(labels = dollar_format()) +
+  labs(x = "Year Range", y = "Tuition",
+       title = "Tuition Rates in the Northeast",
+       subtitle = "via onlinembapage.com") +
+  coord_flip() +
+  geom_point() +
+  facet_wrap(~State)
+```
+
+### Midwest
+
+```{r}
+tuition_costs %>%
+  filter(State %in% midwest) %>%
+  gather(year_range, tuition, -State) %>%
+  arrange(State) %>% 
+  ggplot(aes(year_range, tuition)) +
+  scale_y_continuous(labels = dollar_format()) +
+  labs(x = "Year Range", y = "Tuition",
+       title = "Tuition Rates in the Midwest",
+       subtitle = "via onlinembapage.com") +
+  coord_flip() +
+  geom_point() +
+  facet_wrap(~State)
+```
+
+### South
+
+```{r}
+tuition_costs %>%
+  filter(State %in% south) %>%
+  gather(year_range, tuition, -State) %>%
+  arrange(State) %>% 
+  ggplot(aes(year_range, tuition)) +
+  scale_y_continuous(labels = dollar_format()) +
+  labs(x = "Year Range", y = "Tuition",
+       title = "Tuition Rates in the South",
+       subtitle = "via onlinembapage.com") +
+  coord_flip() +
+  geom_point() +
+  facet_wrap(~State)
+```
+
+### West
+
+```{r}
+tuition_costs %>%
+  filter(State %in% west) %>%
+  gather(year_range, tuition, -State) %>%
+  arrange(State) %>% 
+  ggplot(aes(year_range, tuition)) +
+  scale_y_continuous(labels = dollar_format()) +
+  labs(x = "Year Range", y = "Tuition",
+       title = "Tuition Rates in the West",
+       subtitle = "via onlinembapage.com") +
+  coord_flip() +
+  geom_point() +
+  facet_wrap(~State)
+```
