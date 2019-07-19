@@ -1,0 +1,74 @@
+---
+title: "tidytuesday: r4ds time series"
+author: "Zach Bogart"
+date: "7/16/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE}
+library(tidyverse)
+library(scales)
+```
+
+```{r message=FALSE}
+members <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-07-16/r4ds_members.csv")
+
+```
+
+```{r}
+glimpse(members)
+```
+
+## Membership over time
+
+Taking a look at total membership and how it has grown over time
+```{r}
+members %>%
+  ggplot() +
+  geom_line(aes(x=date, y=total_membership), color='red') +
+```
+
+There doesn't seem to be a difference between *full_members* and *total_membership*.
+```{r}
+members %>%
+  select(c(date, total_membership, full_members)) %>%
+  gather("member_type", "count", -date) %>%
+  ggplot(aes(x=date, y=count, col=member_type)) +
+  geom_line() +
+  ggtitle("There is only one line...maybe these are the same columns?")
+```
+
+To confirm, there doesn't seem to be any difference between the two columns:
+```{r}
+members %>%
+  mutate(member_diff = abs(full_members - total_membership)) %>%
+  select(member_diff) %>%
+  summarise(total_diff = sum(member_diff))
+```
+
+Would remove one of the columns.
+
+## Active members, daily and weekly
+
+Let's look at how the the r4ds active members changed over the time period.
+
+The daily is hovering around 100-200 people, weekly can be more sporadic with spikes in the 400s.
+```{r}
+members %>%
+  select(c(date, daily_active_members, weekly_active_members)) %>%
+  gather("member_type", "count", -date) %>%
+  ggplot(aes(x=date, y=count, col=member_type)) +
+  geom_line() + 
+  scale_x_date(breaks = pretty_breaks(22)) +
+  theme(axis.text.x=element_text(angle = 45, hjust = 1))
+```
+
+Covers about 22 months 
+```{r}
+date_range <- interval(first(members$date), last(members$date))
+date_range / months(1)
+```
