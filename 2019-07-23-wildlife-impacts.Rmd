@@ -1,0 +1,81 @@
+---
+title: "Wildlife Impacts"
+author: "Zach"
+date: "7/23/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+wildlife_impacts <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-07-23/wildlife_impacts.csv")
+```
+
+```{r}
+wildlife_impacts <- wildlife_impacts %>%
+  mutate(state=replace(state, state=="N/A", NA))
+```
+
+## Mostly in the Day or Night?
+
+```{r}
+wildlife_impacts %>%
+  na.omit() %>%
+  ggplot(aes(x=time_of_day)) +
+  geom_bar() +
+  ggtitle("When are the Strikes Happening?") +
+  labs(y="Count", x="Time of Day")
+```
+
+More strikes are occuring in the daytime compared to nighttime. There also seems to be very few specified as "Dawn" or "Dusk", maybe because it is a more niche timeframe to specify.
+
+## Do Some Airports have a big problem with strikes?
+
+Is there an airport that has a lot of recorded strikes?
+Let's look at just the strike count by airport:
+```{r}
+airport_strike_count <- wildlife_impacts %>%
+  group_by(airport) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count))
+
+head(airport_strike_count)
+```
+
+We see a huge chunk of the airports are reported as UNKNOWN. Would have to dig deeper from source and see if this could be resolved. Looking at what is left:
+
+```{r}
+airport_strike_count %>%
+  filter(airport != "UNKNOWN") %>%
+  head(20) %>%
+  ggplot(aes(x = fct_reorder(airport, count), y = count, fill=count)) +
+  geom_col() +
+  scale_fill_gradient(low="orange", high="red")  +
+  labs(x="", y="frequency") +
+  coord_flip() +
+  ggtitle("What Airports Get Birdstrikes?")
+  
+```
+
+We see there is a big jump from the top four airports (over 1000 strikes) compared to the rest (under 1000). This could mean that these airports do in fact see more bird strikes, but it could also just mean they report them more often, have less unknowns, or are more active than other airports, leading to the jump.
+
+## Is there a "season" for birdstrikes?
+
+Can we look at the count of strikes by month and see that there is a span of the year that is worse for strikes?
+```{r}
+wildlife_impacts %>%
+  ggplot(aes(incident_month, fill=..count..)) +
+    geom_bar() +
+  scale_x_continuous(breaks=seq(1,12,1)) +
+  scale_fill_gradient(low="orange", high="red")  +
+  labs(x="Month", y="Frequency") +
+  ggtitle("What Time of Year Do the Stikes Occur?")
+```
+
+Neato! There seems to be more strikes occuring in the summer and fall than in the winter and spring. This might be due to the migration patterns of the birds. It could also be that the birds fly around in the open more readily in the warmer months. Would want to consult a specialist to get a better sense of the natural migratory behaviors of different birds.
