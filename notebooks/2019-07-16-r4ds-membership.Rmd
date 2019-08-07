@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r message=FALSE}
 library(tidyverse)
 library(scales)
+library(lubridate)
 ```
 
 ```{r message=FALSE}
@@ -29,7 +30,7 @@ Taking a look at total membership and how it has grown over time
 ```{r}
 members %>%
   ggplot() +
-  geom_line(aes(x=date, y=total_membership), color='red') +
+  geom_line(aes(x=date, y=total_membership), color='red')
 ```
 
 There doesn't seem to be a difference between *full_members* and *total_membership*.
