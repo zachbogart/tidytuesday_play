@@ -16,6 +16,7 @@ Data Info: Link to the tidytuesday repo for info on the dataset. Name the link b
 
 | Date | Work | Source (click for dataset info) |
 | --- | --- | --- |
+| 2019-07-30 | [Video Games](2019-08-06-video-games.html) | [Steam Spy](https://github.com/rfordatascience/tidytuesday/blob/master/data/2019/2019-07-30) |
 | 2019-07-23 | [Wildlife Strikes](2019-07-23-wildlife-impacts.html) | [FAA](https://github.com/rfordatascience/tidytuesday/blob/master/data/2019/2019-07-23) |
 | 2019-07-16 | [R4DS Membership](2019-07-16-r4ds-membership.html) | [R4DS Slack](https://github.com/rfordatascience/tidytuesday/blob/master/data/2019/2019-07-16) |
 | 2019-01-29 | [US Tuition Costs](2019-01-29-us_tuition_costs.html) | [onlinembapage.com](https://github.com/rfordatascience/tidytuesday/blob/master/data/2018/2018-04-02) |
