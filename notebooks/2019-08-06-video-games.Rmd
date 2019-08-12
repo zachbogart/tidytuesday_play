@@ -43,3 +43,60 @@ clean_df <- raw_df %>%
   rename(publisher = publisher_s, developer = developer_s)
 ```
 
+## Explore
+
+Let's see how price is spread out over the dataset.
+
+```{r}
+clean_df %>%
+  ggplot(aes(x=price)) +
+  geom_histogram()
+```
+
+Looks like there are some "video games" that are super expensive. But there aren't that many.
+
+```{r}
+clean_df %>%
+  select(game, price) %>%
+  filter(price > 100) %>%
+  summarise(count=n())
+```
+
+Let's narrow in on where most of the data is.
+
+```{r}
+clean_df %>%
+  select(game, price) %>%
+  filter(price < 50) %>%
+  ggplot(aes(price)) +
+  geom_histogram()
+```
+
+There are spikes around the even-numbered price points (like 19.99 or 9.99).
+
+## How much do different developers sell their games for?
+
+```{r}
+clean_df %>%
+  na.omit() %>%
+  select(price, game, developer) %>%
+  group_by(developer) %>%
+  summarise(average_cost = mean(price), game_count = n())
+```
+
+Looks like a lot of these developers only have put out one or two games. Maybe we can look at the publishers.
+
+```{r}
+game_costs <- clean_df %>%
+  na.omit() %>%
+  select(price, game, publisher) %>%
+  group_by(publisher) %>%
+  summarise(average_cost = mean(price), game_count = n()) %>%
+  arrange(desc(game_count))
+```
+
+```{r}
+game_costs %>%
+  head()
+```
+
