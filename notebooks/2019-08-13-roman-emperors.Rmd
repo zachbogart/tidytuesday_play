@@ -1,0 +1,118 @@
+---
+title: "Roman Emperors"
+author: "Zach"
+date: "8/13/2019"
+output: html_document
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Setup
+```{r message=FALSE, warning=FALSE}
+library(tidyverse)
+```
+
+```{r}
+emperors <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-08-13/emperors.csv")
+```
+
+## Start
+
+Ideas:
+- Plot a line graph of the birth and death dates of the emperors
+- Group by birth city
+- Look into rise variable
+- Look at breakdown of cause of death
+
+## Explore
+```{r}
+glimpse(emperors)
+```
+
+## Cause of death
+
+```{r}
+emperors %>%
+  group_by(cause) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count))
+```
+
+The majority of the emperors were either killed by assassination or natural causes. 
+
+```{r}
+emperors %>%
+  group_by(cause) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count)) %>%
+  ggplot(aes(reorder(cause, count), count)) +
+    geom_col() + 
+    labs(x="Cause of Death", y="Death Count", title="How They Died") +
+    coord_flip()
+```
+
+## Lifespan
+
+```{r}
+emperors %>%
+  filter(!is.na(birth), !is.na(death)) %>%
+  gather(key = "lifespan", value = "date", birth, death, -name) %>%
+  ggplot(aes(date, reorder(name, desc(date)), color = lifespan)) +
+    geom_point() +
+    labs(x="Year", y="Emperor", title="When Emperors Were Alive")
+```
+
+We can see when the emperors were alive. We also see that a couple of the emperors died before they were born! Guessing that is a typo and would look into swapping the values. Moving on.
+
+Looking at the overlap of lifespans for the different emperors, there are many overlapping rulers. Let's do the same thing, but looking at just their reign.
+
+```{r}
+emperors %>%
+  filter(!is.na(birth), !is.na(death)) %>%
+  gather(key = "reign_span", value = "date", reign_start, reign_end, -name) %>%
+  ggplot(aes(date, reorder(name, desc(date)), color = reign_span)) +
+    geom_point() +
+    labs(x="Year", y="Emperor", title="When Emperors Ruled")
+```
+
+We see it is much tighter with much less overlap between rulers. Their reigns were quite much shorter. Look at some averages of the reigns and lifespans.
+
+```{r}
+emperors_life <- emperors %>%
+  filter(!is.na(birth), !is.na(death)) %>%
+  mutate(lifespan = death - birth,
+         reign_span = reign_end - reign_start)
+
+cat("Average Lifespan:", mean(emperors_life$lifespan))
+cat("Average Reign:", mean(emperors_life$reign_span))
+```
+
+The emperors were living, on average, to the ripe old age of `r round(mean(emperors_life$lifespan) / 365)`, ruling around `r round(mean(emperors_life$reign_span) / 365)` years. 
+
+## Rise
+
+```{r}
+emperors %>%
+  group_by(rise) %>%
+  summarise("count"=n()) %>%
+  arrange(desc(count))
+```
+
+Looks like the most popular way to become emperor was to be born into it. Democratic Elections weren't really in vogue at the time.
+
+## Birth City
+
+The cities look pretty specific, so let's get a broad sense of where they are from with the `birth_prv` column.
+
+```{r}
+emperors %>%
+  group_by(birth_prv) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count))
+```
+
+There are a bunch of unknowns, but a lot of the emperors in this dataset are from Italy and [Pannonia](https://en.wikipedia.org/wiki/Pannonia), a province of the Roman Empire. So many of the Roman Emperors were born in Italy, but a bunch, of course, were also born within the Roman Empire itself.
